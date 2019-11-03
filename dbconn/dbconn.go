@@ -2,17 +2,12 @@ package dbconn
 
 import (
 	"context"
-	"flag"
 	"fmt"
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-)
-
-var (
-	mongoStr = flag.String("mongostr", "", "connection string for mongodb")
 )
 
 // Client represents a connection to the MongoDB server.
@@ -71,8 +66,8 @@ func (c *Client) WriteOutput(id uint64, output string, status string) error {
 	return err
 }
 
-func MakeClient(ctx context.Context) (*Client, error) {
-	client, err := mongo.NewClient(options.Client().ApplyURI(*mongoStr))
+func MakeClient(ctx context.Context, mongoStr string) (*Client, error) {
+	client, err := mongo.NewClient(options.Client().ApplyURI(mongoStr))
 	if err != nil {
 		return nil, err
 	}
