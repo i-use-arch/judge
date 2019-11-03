@@ -1,0 +1,5 @@
+package workqueue
+
+func consume() {
+
+}

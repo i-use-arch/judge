@@ -65,5 +65,7 @@ func (r *Runner) Run(id uint64) (string, error) {
 
 	fmt.Println("done cleaning up")
 
+	fmt.Println("outputting submission result")
+
 	return string(out), nil
 }

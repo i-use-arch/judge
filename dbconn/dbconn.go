@@ -51,6 +51,26 @@ func (c *Client) GetSubmission(id uint64) (string, error) {
 
 }
 
+// WriteOutput updates the submission with output and status
+func (c *Client) WriteOutput(id uint64, output string, status string) error {
+	filter := bson.M{
+		"_id": id,
+	}
+	update := bson.M{
+		"$set": bson.M{
+			"status": status,
+			"output": output,
+		},
+	}
+	_, err := c.c.Database("Code4Trees").Collection("Submissions").UpdateOne(
+		context.Background(),
+		filter,
+		update,
+	)
+
+	return err
+}
+
 func MakeClient(ctx context.Context) (*Client, error) {
 	client, err := mongo.NewClient(options.Client().ApplyURI(*mongoStr))
 	if err != nil {
