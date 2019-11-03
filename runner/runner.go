@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"io/ioutil"
-	"os"
 	"os/exec"
 	"path/filepath"
 	"time"
@@ -14,57 +13,57 @@ import (
 
 // Runner lets you run file
 type Runner struct {
-	Client *dbconn.Client
+	Client  *dbconn.Client
+	Timeout time.Duration
 }
 
-func (r *Runner) Run(id uint64) error {
+// Run runs submission `id` and returns its output, if any.
+func (r *Runner) Run(id uint64) (string, error) {
 
 	fileContent, err := r.Client.GetSubmission(id)
 
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	dir, err := ioutil.TempDir("submissions", fmt.Sprintf("%d", id))
 
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	outFile, err := ioutil.TempFile(dir, "submission")
 
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	_, err = outFile.WriteString(fileContent)
 
 	if err != nil {
-		return err
+		return "", err
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
-	// cmd := exec.CommandContext(ctx, "go", "run", "test/test.go")
+	ctx, _ := context.WithTimeout(context.Background(), r.Timeout)
 	name := filepath.Base(outFile.Name())
 	fmt.Printf("running file %s\n", name)
 	cmd := exec.CommandContext(ctx, "python", name)
 	cmd.Dir = dir
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
+
+	// cmd.Stdout = os.Stdout
+	// cmd.Stderr = os.Stderr
 
 	fmt.Println("running job")
-	cmd.Run()
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		out = []byte{}
+	}
 	fmt.Println("done running job")
 
 	cmd = exec.CommandContext(context.Background(), "rm", "-rf", dir)
 	cmd.Run()
 
 	fmt.Println("done cleaning up")
-	foobar(cancel, cmd)
 
-	return nil
-}
-
-func foobar(cancel context.CancelFunc, cmd *exec.Cmd) {
-
+	return string(out), nil
 }

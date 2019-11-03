@@ -4,6 +4,7 @@ import (
 	"context"
 	"flag"
 	"fmt"
+	"time"
 
 	"github.com/i-use-arch/judge/dbconn"
 	"github.com/i-use-arch/judge/runner"
@@ -15,14 +16,18 @@ func main() {
 	dbc, err := dbconn.MakeClient(ctx)
 
 	if err != nil {
+		fmt.Printf("%v\n", err)
 		panic(err)
 	}
 
-	runner := runner.Runner{Client: dbc}
+	runner := runner.Runner{Client: dbc, Timeout: 2 * time.Second}
 	fmt.Println("about to run")
-	err = runner.Run(3308020806989400253)
+	output, err := runner.Run(3308020806989400253)
 
 	if err != nil {
+		fmt.Printf("%v\n", err)
 		panic(err)
 	}
+
+	fmt.Println(output)
 }
